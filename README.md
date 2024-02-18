@@ -1,2 +1,2 @@
 # IML-MoodTracker
-IML class project with Fani &amp; Michelle 
+IML class project with Fani Kalamara&amp; Michelle Dutoit
