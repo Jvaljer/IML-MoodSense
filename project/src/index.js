@@ -12,16 +12,15 @@ const label = m.select(['angry','sad','happy'], 'happy');
 label.title = 'Define its Label';
 
 const launch = m.button('Launch');
-launch.title = 'Training';
-
-const btn = m.button('Button');
-btn.title = 'For testing purposes';
+launch.title = 'Cross-Validation Train';
 
 const capture = m.button('Save Instance');
 capture.title = 'Save it to TRAINING';
 const capture_test = m.button('Save Instance');
 capture_test.title = 'Save it to TEST';
 
+/*const folds_cnt = m.number(3);
+folds_cnt.title = 'Folds Amount';*/
 
 //----------------------------//
 //       Dataset Handling     //
@@ -41,23 +40,75 @@ const dashboard = m.dashboard({
 //----------------------------//
 //       Cross-Validation     //
 //----------------------------//
-const classifier = m.mlpClassifier({ layers: [128, 64, 32], epochs: 15, batchSize: 16});
+const classifier = m.mlpClassifier({ layers: [128, 64, 32], epochs: 15, batchSize: 16}).sync(
+	store,
+	"mlp-dash"
+);
+const params = m.modelParameters(classifier);
 
-const folds_cnt = m.number(3);
-folds_cnt.title = 'Folds Amount';
+const progress = m.trainingProgress(classifier);
+const cv_plot = m.trainingPlot(classifier);
+const history = m.trainingHistory(store, 
+	{ metrics: ['accuracy'], actions: ['select model']}
+).track(classifier, 'cv-mlp');
 
-//Here is the wanted logic (check if possible)
-/*
-Hit the launch button
-	Starts the N-fold validation
-		Divide the dataset into N partitions
-		select one of them 
-			N selected must be different ones
-		train the model N times, each time using another partition
-	Get the performance of each iteration
-	Combine them to obtain the average performace of the model
-*/
-//Should be done ?
+const batch = m.batchPrediction("CV-batch", store);
+const conf_mat = m.confusionMatrix(batch);
+
+function shuffleArray(a) {
+	const b = a.slice();
+	const rng = Math.random();
+  
+	for (let i = b.length - 1; i > 0; i--) {
+	  	const j = Math.floor(rng * i);
+	  	const temp = b[i];
+	  	b[i] = b[j];
+	  	b[j] = temp;
+	}
+  
+	return b;
+}
+function waitForSuccess() {
+	return new Promise((resolve, reject) => {
+		classifier.$training.subscribe(({ status }) => {
+			if (status === "success") {
+		  		resolve();
+			}
+			if (status === "error") {
+		  		reject();
+			}
+		});
+	});
+}
+
+const folds = 3;
+async function CrossVal(model, dataset){
+	const instances = await dataset
+		.items()
+		.query({ $sort: {createdAt: -1} })
+		.select(['id','x','y'])
+		.toArray()
+		.then(shuffleArray);
+	
+	const n = instances.length;
+	const fsize = Math.floor(n/folds);
+	//in our case, it would be more relevant to equalize the amount of instances per label in each folds
+		//(because relatively small dataset & kinda complex datas)
+	const batched = Array.from(Array(folds), (_, i) => {
+		return instances.slice(i*fsize, Math.min((i+1)*fsize, instances.length));
+	});
+
+	await batch.clear();
+	for await (const i of Array.from(Array(folds), (_, j) => j)) {
+		const train_data = batched.filter((_, z) => i !== z).flat();
+		const test_data = batched.filter((_, z) => i === z).flat();
+		console.log('train_data.length=', train_data.length, 'test_data.length=', test_data.length);
+
+		await classifier.train(m.iterableFromArray(train_data));
+		await waitForSuccess();
+		await batch.predict(classifier,m.iterableFromArray(test_data));
+	}
+}
 
 //----------------------------//
 //       Events Handling      //
@@ -69,51 +120,25 @@ const $train_instance = capture.$click
 		y: label.$value.get(),
 		thumbnail: input.$thumbnails.get(),
 	}))
-	.awaitPromises();
-$train_instance.subscribe(trainset.create);
+	.awaitPromises()
+	.subscribe(trainset.create);
 
-//elements of an 'Instance'
-/*
-export interface Instance {
-  id?: ObjectId; // Object identifier in the database
-  x: any; // Typically, input data
-  y: any; // Typically, output data (for supervised learning)
-  thumbnail?: string; // Thumbnail used for display in components such as datasetBrowser
-  [key: string]: any;
-}
-*/
 launch.$click.subscribe(() => {
-	//first we extract all instances under their label
-	const happy = trainset
-		.items() //turn into iterable
-		.query({ y:'happy' }) //fetch for happy labeled instances
-		.select(['id']) //we only want to access the idea
-		.toArray(); //make it an array
-	const sad = trainset
-		.items()
-		.query({ y:'sad' })
-		.select(['id'])
-		.toArray();
-	const angry = trainset
-		.items()
-		.query({ y:'angry' })
-		.select(['id'])
-		.toArray();
-	
-	//then we devide each one of them into 3 sets
-	//MUST IMPLEMENT
+	CrossVal(classifier, trainset);
 });
-
 
 //----------------------------//
 //   Dashboard Organisation   //
 //----------------------------//
-//this page shall contain both training and testing UIs
-  //maybe include the training history in this ? @
 dashboard.page('Cross-Validation',false)
-  .use([folds_cnt, launch]);
+  .use([params, launch])
+  .use(progress)
+  .use(cv_plot, conf_mat);
 
-//this other page shalle include the whole dataset and management tools
+
+dashboard.page('Model Testing')
+	.use(history);
+
 dashboard.page('Dataset', false)
   .use(input)
   .use([label, capture])
@@ -122,5 +147,10 @@ dashboard.page('Dataset', false)
 
 //@ or create another page for a more developped training history
 //dashboard.page('Training History');
+dashboard.settings
+  .dataStores(store)
+  .datasets(trainset)
+  .models(classifier)
+  .predictions(batch);
 
 dashboard.show();
