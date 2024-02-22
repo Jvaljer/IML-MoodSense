@@ -127,6 +127,12 @@ launch.$click.subscribe(() => {
 	CrossVal(classifier, trainset);
 });
 
+history.$selection.subscribe((run) => {
+	//for some reason that doesn't work ...
+	console.log("selected a model: "+ run.name);
+	console.log("     with epochs: "+ run.epochs);
+	console.log("      and base: "+ run.basename);
+});
 //----------------------------//
 //   Dashboard Organisation   //
 //----------------------------//
