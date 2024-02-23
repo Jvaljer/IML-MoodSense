@@ -14,6 +14,9 @@ label.title = 'Define its Label';
 const launch = m.button('Launch');
 launch.title = 'Cross-Validation Train';
 
+const test_btn = m.button('Launch');
+test_btn.title = 'Selected Model Test';
+
 const capture = m.button('Save Instance');
 capture.title = 'Save it to TRAINING';
 const capture_test = m.button('Save Instance');
@@ -26,11 +29,15 @@ folds_cnt.title = 'Folds Amount';*/
 //       Dataset Handling     //
 //----------------------------//
 const store = m.dataStore('localStorage');
+const extractor = m.mobileNet();
+
 const trainset = m.dataset('TrainSet', store);
 const train_plot = m.datasetScatter(trainset);
 const train_table = m.datasetTable(trainset);
 
-const extractor = m.mobileNet();
+const testset = m.dataset('TestSet', store);
+const test_plot = m.datasetScatter(testset);
+const test_table = m.datasetTable(testset);
 
 const dashboard = m.dashboard({
   title: 'MoodTracker - MLE',
@@ -50,7 +57,7 @@ const progress = m.trainingProgress(classifier);
 const cv_plot = m.trainingPlot(classifier);
 const history = m.trainingHistory(store, 
 	{ metrics: ['accuracy'], actions: ['select model']}
-).track(classifier, 'cv-mlp');
+).track(classifier, 'cv-mlp'); //might need to modify that in order to have [fold1, fold2, fold3] in one array
 
 const batch = m.batchPrediction("CV-batch", store);
 const conf_mat = m.confusionMatrix(batch);
@@ -123,15 +130,35 @@ const $train_instance = capture.$click
 	.awaitPromises()
 	.subscribe(trainset.create);
 
+const $test_instance = capture_test.$click
+	.sample(input.$images)
+	.map(async(img) => ({
+		x: await extractor.process(img),
+		y: label.$value.get(),
+		thumbnail: input.$thumbnails.get(),
+	}))
+	.awaitPromises()
+	.subscribe(testset.create);
+
 launch.$click.subscribe(() => {
 	CrossVal(classifier, trainset);
 });
 
+var model_run;
 history.$selection.subscribe((run) => {
-	//for some reason that doesn't work ...
-	console.log("selected a model: "+ run.name);
-	console.log("     with epochs: "+ run.epochs);
-	console.log("      and base: "+ run.basename);
+	if(run[0]!=undefined){
+		model_run = run[0]; //only the first of the selected runs
+		console.log("run is named: "+run[0]["name"]);
+		console.log("run has parameters: "+run[0]["params"]);
+	}
+});
+
+test_btn.$click.subscribe(() => {
+	if(model_run!=null){
+		console.log("we wanna test the model: "+model_run["name"]);
+	} else {
+		console.log("there's no selected model to test");
+	}
 });
 //----------------------------//
 //   Dashboard Organisation   //
@@ -143,13 +170,15 @@ dashboard.page('Cross-Validation',false)
 
 
 dashboard.page('Model Testing')
+	.sidebar(test_btn)
 	.use(history);
+
 
 dashboard.page('Dataset', false)
   .use(input)
-  .use([label, capture])
-  .use(train_table)
-  .use(train_plot);
+  .use([label, capture, capture_test])
+  .use([train_table, test_table])
+  .use([train_plot, test_plot]);
 
 //@ or create another page for a more developped training history
 //dashboard.page('Training History');
