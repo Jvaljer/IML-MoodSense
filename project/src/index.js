@@ -15,15 +15,13 @@ const launch = m.button('Launch');
 launch.title = 'Cross-Validation Train';
 
 const test_btn = m.button('Launch');
-test_btn.title = 'Selected Model Test';
+test_btn.title = 'Test the Loaded Model';
 
 const capture = m.button('Save Instance');
 capture.title = 'Save it to TRAINING';
 const capture_test = m.button('Save Instance');
 capture_test.title = 'Save it to TEST';
 
-/*const folds_cnt = m.number(3);
-folds_cnt.title = 'Folds Amount';*/
 
 //----------------------------//
 //       Dataset Handling     //
@@ -59,8 +57,8 @@ const history = m.trainingHistory(store,
 	{ metrics: ['accuracy'], actions: ['select model']}
 ).track(classifier, 'cv-mlp'); //might need to modify that in order to have [fold1, fold2, fold3] in one array
 
-const batch = m.batchPrediction("CV-batch", store);
-const conf_mat = m.confusionMatrix(batch);
+const cv_batch = m.batchPrediction("CV-batch", store);
+const conf_mat = m.confusionMatrix(cv_batch);
 
 function shuffleArray(a) {
 	const b = a.slice();
@@ -105,7 +103,7 @@ async function CrossVal(model, dataset){
 		return instances.slice(i*fsize, Math.min((i+1)*fsize, instances.length));
 	});
 
-	await batch.clear();
+	await cv_batch.clear();
 	for await (const i of Array.from(Array(folds), (_, j) => j)) {
 		const train_data = batched.filter((_, z) => i !== z).flat();
 		const test_data = batched.filter((_, z) => i === z).flat();
@@ -118,7 +116,13 @@ async function CrossVal(model, dataset){
 }
 
 //----------------------------//
-//       Events Handling      //
+//      Testing Selection     //
+//----------------------------//
+const load_test = m.button('Load');
+load_test.title = 'Load The Selected Model';
+
+//----------------------------//
+//    Other Events Handling   //
 //----------------------------//
 const $train_instance = capture.$click
 	.sample(input.$images)
@@ -153,13 +157,14 @@ history.$selection.subscribe((run) => {
 	}
 });
 
-test_btn.$click.subscribe(() => {
+test_btn.$click.subscribe(async() => {
 	if(model_run!=null){
 		console.log("we wanna test the model: "+model_run["name"]);
 	} else {
 		console.log("there's no selected model to test");
 	}
 });
+
 //----------------------------//
 //   Dashboard Organisation   //
 //----------------------------//
@@ -169,9 +174,9 @@ dashboard.page('Cross-Validation',false)
   .use(cv_plot, conf_mat);
 
 
-dashboard.page('Model Testing')
-	.sidebar(test_btn)
-	.use(history);
+dashboard.page('Testing', false)
+	.use(history)
+	.use([load_test, test_btn]);
 
 
 dashboard.page('Dataset', false)
@@ -186,6 +191,6 @@ dashboard.settings
   .dataStores(store)
   .datasets(trainset)
   .models(classifier)
-  .predictions(batch);
+  .predictions(cv_batch);
 
 dashboard.show();
