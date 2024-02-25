@@ -118,8 +118,12 @@ async function CrossVal(model, dataset){
 //----------------------------//
 //      Testing Selection     //
 //----------------------------//
-const load_test = m.button('Load');
-load_test.title = 'Load The Selected Model';
+
+//the idea of the testing is to get the predictions of the selected model on the "TEST" dataset (voluntarely small)
+const test_batch = m.batchPrediction('test-mlp', store);
+const test_viz = m.confusionMatrix(test_batch);
+
+//might be interesting to test the selected model not on a whole dataset but also on single inputs ?
 
 //----------------------------//
 //    Other Events Handling   //
@@ -152,14 +156,17 @@ var model_run;
 history.$selection.subscribe((run) => {
 	if(run[0]!=undefined){
 		model_run = run[0]; //only the first of the selected runs
-		console.log("run is named: "+run[0]["name"]);
-		console.log("run has parameters: "+run[0]["params"]);
+		console.log("selected model is: ["+run[0]['name']+"]");
 	}
 });
 
 test_btn.$click.subscribe(async() => {
 	if(model_run!=null){
 		console.log("we wanna test the model: "+model_run["name"]);
+		await test_batch.clear();
+		console.log("batch cleared");
+		await test_batch.predict(model_run, testset);
+		console.log("got results");
 	} else {
 		console.log("there's no selected model to test");
 	}
@@ -176,7 +183,8 @@ dashboard.page('Cross-Validation',false)
 
 dashboard.page('Testing', false)
 	.use(history)
-	.use([load_test, test_btn]);
+	.use(test_btn)
+	.use(test_viz);
 
 
 dashboard.page('Dataset', false)
@@ -189,8 +197,8 @@ dashboard.page('Dataset', false)
 //dashboard.page('Training History');
 dashboard.settings
   .dataStores(store)
-  .datasets(trainset)
+  .datasets(trainset,testset)
   .models(classifier)
-  .predictions(cv_batch);
+  .predictions(cv_batch, test_batch);
 
 dashboard.show();
