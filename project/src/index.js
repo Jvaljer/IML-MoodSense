@@ -1,31 +1,23 @@
 import '@marcellejs/core/dist/marcelle.css';
 import * as m from '@marcellejs/core';
 
-//----------------------------//
-//          Components        //
-//----------------------------//
-const input = m.sketchPad();
+//-------------------------------------//
+//          Marcelle Components        //
+//-------------------------------------//
+const input = m.sketchPad(); //only for testing purposes -> replace with file upload !
 input.title = 'Draw Your Instance';
 
 const label = m.select(['angry','sad','happy'], 'happy');
-//label.$value.subscribe((x) => console.log('label $value:', x));
 label.title = 'Define its Label';
 
 const launch = m.button('Launch');
 launch.title = 'Cross-Validation Train';
-
-const test_btn = m.button('Launch');
-test_btn.title = 'Test the Loaded Model';
 
 const capture = m.button('Save Instance');
 capture.title = 'Save it to TRAINING';
 const capture_test = m.button('Save Instance');
 capture_test.title = 'Save it to TEST';
 
-
-//----------------------------//
-//       Dataset Handling     //
-//----------------------------//
 const store = m.dataStore('localStorage');
 const extractor = m.mobileNet();
 
@@ -33,18 +25,26 @@ const trainset = m.dataset('TrainSet', store);
 const train_plot = m.datasetScatter(trainset);
 const train_table = m.datasetTable(trainset);
 
+const cv_batch = m.batchPrediction("CV-batch", store);
+const conf_mat = m.confusionMatrix(cv_batch);
+
 const testset = m.dataset('TestSet', store);
 const test_plot = m.datasetScatter(testset);
 const test_table = m.datasetTable(testset);
+
+const test_btn = m.button('Launch');
+test_btn.title = 'Test the Loaded Model';
+const test_batch = m.batchPrediction('test-mlp', store);
+const test_viz = m.confusionMatrix(test_batch);
 
 const dashboard = m.dashboard({
   title: 'MoodTracker - MLE',
   author: 'Jvaljer'
 });
 
-//----------------------------//
-//       Cross-Validation     //
-//----------------------------//
+//------------------------------------//
+//       Model Related Components     //
+//------------------------------------//
 const classifier = m.mlpClassifier({ layers: [128, 64, 32], epochs: 15, batchSize: 16}).sync(
 	store,
 	"mlp-dash"
@@ -57,9 +57,10 @@ const history = m.trainingHistory(store,
 	{ metrics: ['accuracy'], actions: ['select model']}
 ).track(classifier, 'cv-mlp'); //might need to modify that in order to have [fold1, fold2, fold3] in one array
 
-const cv_batch = m.batchPrediction("CV-batch", store);
-const conf_mat = m.confusionMatrix(cv_batch);
 
+//------------------------//
+//      Some Functions    //
+//------------------------//
 function shuffleArray(a) {
 	const b = a.slice();
 	const rng = Math.random();
@@ -86,6 +87,9 @@ function waitForSuccess() {
 	});
 }
 
+//-------------------------------------//
+//       Cross-Validation Functions    //
+//-------------------------------------//
 const folds = 3;
 async function CrossVal(model, dataset){
 	const instances = await dataset
@@ -115,19 +119,14 @@ async function CrossVal(model, dataset){
 	}
 }
 
-//----------------------------//
-//      Testing Selection     //
-//----------------------------//
+//starting the CV when clicking on the 'Launch' button
+launch.$click.subscribe(() => {
+	CrossVal(classifier, trainset);
+});
 
-//the idea of the testing is to get the predictions of the selected model on the "TEST" dataset (voluntarely small)
-const test_batch = m.batchPrediction('test-mlp', store);
-const test_viz = m.confusionMatrix(test_batch);
-
-//might be interesting to test the selected model not on a whole dataset but also on single inputs ?
-
-//----------------------------//
-//    Other Events Handling   //
-//----------------------------//
+//-----------------------------------------------//
+//   Capturing Instances into the Train Dataset  //
+//-----------------------------------------------//
 const $train_instance = capture.$click
 	.sample(input.$images)
 	.map(async(img) => ({
@@ -138,6 +137,9 @@ const $train_instance = capture.$click
 	.awaitPromises()
 	.subscribe(trainset.create);
 
+//----------------------------------------------//
+//   Capturing Instances into the Test Dataset  //
+//----------------------------------------------//
 const $test_instance = capture_test.$click
 	.sample(input.$images)
 	.map(async(img) => ({
@@ -148,9 +150,14 @@ const $test_instance = capture_test.$click
 	.awaitPromises()
 	.subscribe(testset.create);
 
-launch.$click.subscribe(() => {
-	CrossVal(classifier, trainset);
-});
+
+//---------------------------------//
+//      Model Testing Functions    //
+//---------------------------------//
+
+//the idea of the testing is to get the predictions of the selected model on the "TEST" dataset (voluntarely small)
+
+//might be interesting to test the selected model not on a whole dataset but also on single inputs ?
 
 var model_run;
 history.$selection.subscribe((run) => {
@@ -172,9 +179,9 @@ test_btn.$click.subscribe(async() => {
 	}
 });
 
-//----------------------------//
-//   Dashboard Organisation   //
-//----------------------------//
+//-----------------------------------//
+//   Dashboard Layout Organisation   //
+//-----------------------------------//
 dashboard.page('Cross-Validation',false)
   .use([params, launch])
   .use(progress)
