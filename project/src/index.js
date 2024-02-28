@@ -1,23 +1,32 @@
 import '@marcellejs/core/dist/marcelle.css';
 import * as m from '@marcellejs/core';
+import { loadedIndicator } from './components';
 
 //----------------------------//
 //          Components        //
 //----------------------------//
 const input = m.imageUpload({ width: 224, height: 224 });
+//const input = m.sketchPad(); //only for quick local testing
 const instanceViewer = m.imageDisplay(input.$images);
 input.title = 'Upload Your Image';
 
 
 const label = m.select(['angry','sad','happy'], 'happy');
-//label.$value.subscribe((x) => console.log('label $value:', x));
 label.title = 'Define its Label';
 
 const launch = m.button('Launch');
 launch.title = 'Cross-Validation Train';
 
 const test_btn = m.button('Launch');
-test_btn.title = 'Test the Loaded Model';
+test_btn.title = 'Test Loaded Model';
+const toggle = m.toggle('Toggle Testing from Upload Image');
+toggle.title = 'Testing on Dataset';
+
+const test_input = m.imageUpload({ width: 224, height: 224 });
+//const test_input = m.sketchPad(); //only for local testing purposes
+test_input.title = 'Upload an image you wanna test';
+const test_viewer = m.imageDisplay(test_input.$images);
+test_viewer.title = 'Preview of your Image';
 
 const capture = m.button('Save Instance');
 capture.title = 'Save it to TRAINING';
@@ -31,16 +40,16 @@ capture_test.title = 'Save it to TEST';
 const store = m.dataStore(
 	'https://marcelle.lisn.upsaclay.fr/iml2024/api'
   );
-  try {
+try {
 	await store.connect();
-  } catch (error) {
+} catch (error) {
 	await store.loginWithUI();
-  }
+}
+//const store = m.dataStore('localStorage'); //only for local testing purposes
 const extractor = m.mobileNet();
 
 const trainset = m.dataset('project-images', store);
 
-//const trainset = m.dataset('TrainSet', store);
 const train_plot = m.datasetScatter(trainset);
 const train_table = m.datasetTable(trainset);
 
@@ -130,7 +139,19 @@ async function CrossVal(model, dataset){
 //      Testing Selection     //
 //----------------------------//
 const load_test = m.button('Load');
-load_test.title = 'Load The Selected Model';
+load_test.title = 'Load Selected Model';
+
+const indicator = loadedIndicator();
+const $features = test_input.$images
+	.filter(() => toggle.$checked.get() && classifier.ready)
+	.map((img) => extractor.process(img)) //might gonna change that to the loaded model...
+	.awaitPromises();
+
+const $predictions = $features
+	.map((features) => classifier.predict(features))
+	.awaitPromises();
+
+const test_pred = m.confidencePlot($predictions);
 
 //----------------------------//
 //    Other Events Handling   //
@@ -161,18 +182,19 @@ launch.$click.subscribe(() => {
 
 var model_run;
 history.$selection.subscribe((run) => {
+	//will need to adapt this to the new history 
 	if(run[0]!=undefined){
 		model_run = run[0]; //only the first of the selected runs
-		console.log("run is named: "+run[0]["name"]);
-		console.log("run has parameters: "+run[0]["params"]);
 	}
 });
 
+load_test.$click.subscribe(async() => {
+	indicator.load(model_run);
+});
+
 test_btn.$click.subscribe(async() => {
-	if(model_run!=null){
-		console.log("we wanna test the model: "+model_run["name"]);
-	} else {
-		console.log("there's no selected model to test");
+	if(indicator.loaded_run!=null){
+		console.log("WANNA TEST THIS MODEL");
 	}
 });
 
@@ -187,7 +209,8 @@ dashboard.page('Cross-Validation',false)
 
 dashboard.page('Testing', false)
 	.use(history)
-	.use([load_test, test_btn]);
+	.use([load_test, test_btn, indicator, toggle])
+	.use([test_input, test_viewer, test_pred]);
 
 
 dashboard.page('Dataset')
