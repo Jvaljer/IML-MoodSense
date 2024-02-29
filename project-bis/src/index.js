@@ -1,18 +1,18 @@
 import '@marcellejs/core/dist/marcelle.css';
 import * as m from '@marcellejs/core';
-import { batchHistory, loadedIndicator } from './components';
+import { history, indicator } from './components';
 
 //----------------------------//
 //          Components        //
 //----------------------------//
-const input = m.imageUpload({ width: 224, height: 224 });
-//const input = m.sketchPad(); //only for quick local testing
+//const input = m.imageUpload({ width: 224, height: 224 });
+const input = m.sketchPad(); //only for quick local testing
 const instanceViewer = m.imageDisplay(input.$images);
 input.title = 'Upload Your Image';
 
 
-const label = m.select(['angry','sad','happy'], 'happy');
-//const label = m.select(['square','triangle'], 'square'); //for testing purposes only
+//const label = m.select(['angry','sad','happy'], 'happy');
+const label = m.select(['square','triangle'], 'square'); //for testing purposes only
 label.title = 'Define its Label';
 
 const launch = m.button('Launch');
@@ -23,8 +23,8 @@ test_btn.title = 'Test Loaded Model';
 const toggle = m.toggle('Toggle Testing from Upload Image');
 toggle.title = 'Testing on Dataset';
 
-const test_input = m.imageUpload({ width: 224, height: 224 });
-//const test_input = m.sketchPad(); //only for local testing purposes
+//const test_input = m.imageUpload({ width: 224, height: 224 });
+const test_input = m.sketchPad(); //only for local testing purposes
 test_input.title = 'Upload an image you wanna test';
 const test_viewer = m.imageDisplay(test_input.$images);
 test_viewer.title = 'Preview of your Image';
@@ -38,15 +38,15 @@ capture_test.title = 'Save it to TEST';
 //----------------------------//
 //       Dataset Handling     //
 //----------------------------//
-const store = m.dataStore(
+/*const store = m.dataStore(
     'https://marcelle.lisn.upsaclay.fr/iml2024/api'
   );
 try {
     await store.connect();
 } catch (error) {
     await store.loginWithUI();
-}
-//const store = m.dataStore('localStorage'); //only for local testing purposes
+}*/
+const store = m.dataStore('localStorage'); //only for local testing purposes
 const extractor = m.mobileNet();
 
 const trainset = m.dataset('project-images', store);
@@ -72,11 +72,14 @@ const classifier = m.mlpClassifier({ layers: [128, 64, 64, 32], epochs: 15, batc
     store,
     "mlp-dash"
 );
+
+var clfs = [classifier];
+
 const params = m.modelParameters(classifier);
 
 const progress = m.trainingProgress(classifier);
 const cv_plot = m.trainingPlot(classifier);
-const history = batchHistory([]);
+const hist = history([]);
 
 const cv_batch = m.batchPrediction("CV-batch", store);
 const conf_mat = m.confusionMatrix(cv_batch);
@@ -127,13 +130,15 @@ async function CrossVal(model, dataset){
         const train_data = batched.filter((_, z) => i !== z).flat();
         const test_data = batched.filter((_, z) => i === z).flat();
 
+		//classifier.clear();
         await classifier.train(m.iterableFromArray(train_data));
         await waitForSuccess();
         await cv_batch.predict(classifier,m.iterableFromArray(test_data));
     }
-    var str = "train-"+history.count;
+    var str = "train-"+hist.count;
     classifier.save(store, str);
-    history.add(str);
+	clfs.push(classifier);
+    hist.add(str);
 }
 
 //----------------------------//
@@ -142,7 +147,7 @@ async function CrossVal(model, dataset){
 const load_test = m.button('Load');
 load_test.title = 'Load Selected Model';
 
-const indicator = loadedIndicator();
+const indic = indicator();
 
 //this part works, but isn't linked to the selected model at all
 const $features = test_input.$images
@@ -188,16 +193,16 @@ launch.$click.subscribe(() => {
 
 var loaded;
 load_test.$click.subscribe(() => {
-    if(history.selected!=undefined){
-        loaded = history.selected;
-        indicator.load(loaded);
+    if(hist.selected!=undefined){
+        loaded = hist.selected;
+        indic.load(loaded);
     }
 });
 
 test_btn.$click.subscribe(async() => {
     if(!toggle.$checked.get()){
         await test_batch.clear();
-        if(indicator.loaded_run!=null){
+        if(indic.loaded_run!=null){
             classifier.load(store, loaded);
         }
 		await test_batch.predict(classifier, testset);
@@ -214,8 +219,8 @@ dashboard.page('Cross-Validation',false)
 
 
 dashboard.page('Testing', false)
-    .use(history)
-    .use([load_test, test_btn, indicator, toggle])
+    .use(hist)
+    .use([load_test, test_btn, indic, toggle])
     .use([test_input, test_viewer, test_pred])
     .use(test_mat);
 

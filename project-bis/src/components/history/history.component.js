@@ -1,23 +1,22 @@
 import { Component } from '@marcellejs/core';
-import View from './batch-history.view.svelte';
+import View from './history.view.svelte';
 
-export class BatchHistory extends Component {
+export class History extends Component {
 	constructor(array) {
 		super();
-		this.title = 'Batch History';
+		this.title = 'Training History';
 		this.list = array;
 		this.selected = undefined;
+		this.count = array.length;
 	}
 
-	add(){
-		//must implement
-	}
-	remove(){
-		//must implement
+	add(name){
+		this.list.push(name);
+		this.count++;
 	}
 
-	select(){
-		//must implement
+	Click(item){
+		this.selected = item;
 	}
 
 	mount(target) {
@@ -29,7 +28,9 @@ export class BatchHistory extends Component {
 			props: {
 				title: this.title,
 				list: this.list,
-				selected: this.selected
+                selected: this.selected,
+                count: this.count,
+                Click: this.Click
 			}
 		});
 	}
