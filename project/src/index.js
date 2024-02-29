@@ -68,7 +68,7 @@ const dashboard = m.dashboard({
 //----------------------------//
 //       Cross-Validation     //
 //----------------------------//
-const classifier = m.mlpClassifier({ layers: [128, 64, 32], epochs: 15, batchSize: 16}).sync(
+const classifier = m.mlpClassifier({ layers: [128, 64, 64, 32], epochs: 15, batchSize: 32}).sync(
     store,
     "mlp-dash"
 );
@@ -141,10 +141,9 @@ async function CrossVal(model, dataset){
 const load_test = m.button('Load');
 load_test.title = 'Load Selected Model';
 
-const load_clf = m.mlpClassifier({ layers: [64,32], epochs:10});
-
 const indicator = loadedIndicator();
-/*//this part works, but isn't linked to the selected model at all
+
+//this part works, but isn't linked to the selected model at all
 const $features = test_input.$images
     .filter(() => toggle.$checked.get() && classifier.ready)
     .map((img) => extractor.process(img)) //might gonna change that to the loaded model...
@@ -154,18 +153,6 @@ const $predictions = $features
     .map((features) => classifier.predict(features))
     .awaitPromises();
 
-const test_pred = m.confidencePlot($predictions);
-*/
-const $features = test_input.$images
-    .filter(() => toggle.$checked.get() && indicator.loaded_run!=undefined)
-    .map((img) => extractor.process(img))
-    .awaitPromises();
-const $predictions = $features
-    .map(async(f) => {
-        load_clf.load(indicator.loaded_run);
-        load_clf.predict(f);
-    }) //this ain't a function tho
-    .awaitPromises();
 const test_pred = m.confidencePlot($predictions);
 
 const test_batch = m.batchPrediction("test-batch", store);
@@ -215,7 +202,6 @@ test_btn.$click.subscribe(async() => {
         const run = indicator.loaded_run["checkpoints"];
 
 		await test_batch.clear();
-		classifier.load(run[0]);
 		await test_batch.predict(classifier, testset);
 
         /*
@@ -251,8 +237,8 @@ dashboard.page('Dataset')
 //dashboard.page('Training History');
 dashboard.settings
   .dataStores(store)
-  .datasets(trainset, testset)
+  .datasets(trainset)
   .models(classifier)
-  .predictions(cv_batch, test_batch);
+  .predictions(cv_batch);
 
 dashboard.show();
