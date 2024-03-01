@@ -21,12 +21,20 @@ export class CvProgress extends Component {
 		this.accs.push(acc);
 		this.count++;
 		if(this.view){
-			this.view.$set({ accs:this.accs, count:this.count, fold_done:this.fold_done });
+			this.view.$set({ accs:this.accs, count:this.count, fold_done:this.fold_done, mean_acc:this.mean_acc });
 		}
 	}
 
 	fold_done(i){
 		return (this.folds[i]!=null);
+	}
+
+	mean_acc(){
+		const a1 = this.accs[0];
+		const a2 = this.accs[1];
+		const a3 = this.accs[2];
+
+		return (a1+a2+a3)/3;
 	}
 
 	mount(target) {
@@ -40,7 +48,8 @@ export class CvProgress extends Component {
 				count: this.count,
 				folds: this.folds,
 				fold_done: this.fold_done,
-				accs: this.accs
+				accs: this.accs,
+				mean_acc: this.mean_acc
 			}
 		});
 	}

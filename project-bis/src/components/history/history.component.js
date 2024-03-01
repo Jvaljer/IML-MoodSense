@@ -17,13 +17,16 @@ export class History extends Component {
 
 	Click(item){
 		this.selected = item;
+		if(this.view){
+			this.view.$set({ accs:this.accs, count:this.count, fold_done:this.fold_done });
+		}
 	}
 
 	mount(target) {
 		const t = target || document.querySelector(`#${this.id}`);
 		if (!t) return;
 		this.destroy();
-		this.$$.app = new View({
+		this.view = new View({
 			target: t,
 			props: {
 				title: this.title,

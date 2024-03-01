@@ -80,11 +80,11 @@ const progress = m.trainingProgress(classifier);
 const cv_plot = m.trainingPlot(classifier);
 const hist = history([]);
 
-const progress_viz = cvProgress();
-
 const cv_batch = m.batchPrediction("CV-batch", store);
 const conf_mat = m.confusionMatrix(cv_batch);
 conf_mat.title = 'Predictions Visualisation from Cross-Validation';
+
+const progress_viz = cvProgress();
 
 function shuffleArray(a) {
     const b = a.slice();
@@ -138,7 +138,6 @@ async function CrossVal(model, dataset){
         await waitForSuccess();
         await cv_batch.predict(classifier,m.iterableFromArray(test_data));
         progress_viz.finish_fold(cv_batch, conf_mat["$accuracy"]["value"]);
-        console.log("Training Plot: "+cv_plot);
     }
     var str = "train-"+hist.count;
     classifier.save(store, str);
@@ -218,7 +217,8 @@ test_btn.$click.subscribe(async() => {
 //----------------------------//
 dashboard.page('Cross-Validation',false)
   .use([params, launch])
-  .use([progress_viz,progress])
+  .use(progress_viz)
+  .use(progress)
   .use(cv_plot, conf_mat);
 
 
