@@ -1,13 +1,19 @@
 import '@marcellejs/core/dist/marcelle.css';
-import { dashboard, text } from '@marcellejs/core';
+import * as m from '@marcellejs/core';
 
-const x = text('Welcome to Marcelle!');
+const txt = m.text('Text Component');
+const wiz = m.wizard();
 
-const dash = dashboard({
-	title: 'My Marcelle App!',
-	author: 'Marcelle Doe'
+wiz
+	.page()
+	.title('First')
+	.description('Try understanding the layout')
+	.use(txt)
+	.page()
+	.title('Second')
+	.description('Now understand the navigation');
+;
+
+document.querySelector('#open-wizard').addEventListener('click', () => {
+	wiz.show();
 });
-
-dash.page('Welcome').use(x);
-
-dash.show();
