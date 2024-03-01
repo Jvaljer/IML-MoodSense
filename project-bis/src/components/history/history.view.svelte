@@ -28,7 +28,7 @@
 <ViewContainer {title}>
   <div>
     <div class="box">
-      {#if selected == undefined}
+      {#if (selected==undefined)}
         No Model Selected ...
       {:else}
         You Selected the Model <b>"{selected}"</b>

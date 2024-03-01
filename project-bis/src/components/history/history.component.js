@@ -18,7 +18,7 @@ export class History extends Component {
 	Click(item){
 		this.selected = item;
 		if(this.view){
-			this.view.$set({ accs:this.accs, count:this.count, fold_done:this.fold_done });
+			this.view.$set({ accs:this.accs, count:this.count, fold_done:this.fold_done, selected:this.selected });
 		}
 	}
 

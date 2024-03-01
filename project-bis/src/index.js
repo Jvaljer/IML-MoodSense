@@ -228,7 +228,6 @@ dashboard.page('Testing', false)
     .use([test_input, test_viewer, test_pred])
     .use(test_mat);
 
-
 dashboard.page('Dataset')
   .sidebar(input, instanceViewer, label)
   .use([capture, capture_test])
