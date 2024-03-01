@@ -1,6 +1,6 @@
 import '@marcellejs/core/dist/marcelle.css';
 import * as m from '@marcellejs/core';
-import { history, indicator } from './components';
+import { history, indicator, cvProgress } from './components';
 
 //----------------------------//
 //          Components        //
@@ -10,7 +10,6 @@ const input = m.sketchPad(); //only for quick local testing
 const instanceViewer = m.imageDisplay(input.$images);
 input.title = 'Upload Your Image';
 instanceViewer.title = 'Here yo ucan visualise it better';
-
 
 //const label = m.select(['angry','sad','happy'], 'happy');
 const label = m.select(['square','triangle','circle'], 'square'); //for testing purposes only
@@ -81,6 +80,8 @@ const progress = m.trainingProgress(classifier);
 const cv_plot = m.trainingPlot(classifier);
 const hist = history([]);
 
+const progress_viz = cvProgress();
+
 const cv_batch = m.batchPrediction("CV-batch", store);
 const conf_mat = m.confusionMatrix(cv_batch);
 conf_mat.title = 'Predictions Visualisation from Cross-Validation';
@@ -111,6 +112,7 @@ function waitForSuccess() {
 
 const folds = 3;
 async function CrossVal(model, dataset){
+    progress_viz.reset();
     const instances = await dataset
         .items()
         .query({ $sort: {createdAt: -1} })
@@ -135,6 +137,8 @@ async function CrossVal(model, dataset){
         await classifier.train(m.iterableFromArray(train_data));
         await waitForSuccess();
         await cv_batch.predict(classifier,m.iterableFromArray(test_data));
+        progress_viz.finish_fold(cv_batch, conf_mat["$accuracy"]["value"]);
+        console.log("Training Plot: "+cv_plot);
     }
     var str = "train-"+hist.count;
     classifier.save(store, str);
@@ -216,7 +220,7 @@ test_btn.$click.subscribe(async() => {
 //----------------------------//
 dashboard.page('Cross-Validation',false)
   .use([params, launch])
-  .use(progress)
+  .use([progress_viz,progress])
   .use(cv_plot, conf_mat);
 
 
