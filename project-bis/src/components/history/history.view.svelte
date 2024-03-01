@@ -6,21 +6,21 @@
 </script>
 
 <style>
-  /* Style for the buttons */
   .button-container {
     display: flex;
-    flex-wrap: wrap; /* Enable wrapping */
-    gap: 10px; /* Space between buttons */
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
   }
 
-  /* Style for each button */
   .button-container button {
-    margin-bottom: 10px; /* Add some bottom margin */
+    margin-bottom: 10px;
+    padding: 8px 16px;
+    font-size: 16px;
   }
 </style>
 
 <ViewContainer {title}>
-  <div>Trained Classifier History</div>
   <div class="button-container">
     {#each list as item}
       <button on:click={() => Click(item)}>{item}</button>

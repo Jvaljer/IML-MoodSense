@@ -9,10 +9,11 @@ import { history, indicator } from './components';
 const input = m.sketchPad(); //only for quick local testing
 const instanceViewer = m.imageDisplay(input.$images);
 input.title = 'Upload Your Image';
+instanceViewer.title = 'Here yo ucan visualise it better';
 
 
 //const label = m.select(['angry','sad','happy'], 'happy');
-const label = m.select(['square','triangle'], 'square'); //for testing purposes only
+const label = m.select(['square','triangle','circle'], 'square'); //for testing purposes only
 label.title = 'Define its Label';
 
 const launch = m.button('Launch');
@@ -52,30 +53,29 @@ const extractor = m.mobileNet();
 const trainset = m.dataset('project-images', store);
 
 const train_plot = m.datasetScatter(trainset);
+train_plot.title = 'Train Data ScatterPlot';
 const train_table = m.datasetTable(trainset);
 train_table.title = 'Training Set';
 
 const testset = m.dataset('TestSet', store);
 const test_plot = m.datasetScatter(testset);
+test_plot.title = 'Test Data ScatterPlot';
 const test_table = m.datasetTable(testset);
 test_table.title = ' Testing Set';
 
 const dashboard = m.dashboard({
-  title: 'MoodTracker - MLE',
-  author: 'Jvaljer'
+  title: 'MoodSensor - MLE',
+  author: 'Fani Kalamara, Abel Henry-Lapassat, Michelle Dutoit'
 });
 
 //----------------------------//
 //       Cross-Validation     //
 //----------------------------//
-const classifier = m.mlpClassifier({ layers: [128, 64, 64, 32], epochs: 15, batchSize: 32}).sync(
-    store,
-    "mlp-dash"
-);
-
-var clfs = [classifier];
+var classifier = m.mlpClassifier({ layers: [128, 64, 64, 32], epochs: 15, batchSize: 32});
+//.sync(store, "mlp-dash");
 
 const params = m.modelParameters(classifier);
+params.title = 'MLP Classifier parameters';
 
 const progress = m.trainingProgress(classifier);
 const cv_plot = m.trainingPlot(classifier);
@@ -83,6 +83,7 @@ const hist = history([]);
 
 const cv_batch = m.batchPrediction("CV-batch", store);
 const conf_mat = m.confusionMatrix(cv_batch);
+conf_mat.title = 'Predictions Visualisation from Cross-Validation';
 
 function shuffleArray(a) {
     const b = a.slice();
@@ -137,7 +138,6 @@ async function CrossVal(model, dataset){
     }
     var str = "train-"+hist.count;
     classifier.save(store, str);
-	clfs.push(classifier);
     hist.add(str);
 }
 
@@ -160,9 +160,11 @@ const $predictions = $features
     .awaitPromises();
 
 const test_pred = m.confidencePlot($predictions);
+test_pred.title = 'Model Prediction';
 
 const test_batch = m.batchPrediction("test-batch", store);
 const test_mat = m.confusionMatrix(test_batch);
+test_mat.title = 'Model Predictions on TestSet';
 
 //----------------------------//
 //    Other Events Handling   //
