@@ -16,8 +16,8 @@ export class CvProgress extends Component {
 		this.accs = [];
 	}
 
-	finish_fold(fold, acc){
-		this.folds.push(fold);
+	finish_fold(f, acc){
+		this.folds.push(f);
 		this.accs.push(acc);
 		this.count++;
 		if(this.view){

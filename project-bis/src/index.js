@@ -202,15 +202,13 @@ load_test.$click.subscribe(() => {
     if(hist.selected!=undefined){
         loaded = hist.selected;
         indic.load(loaded);
+        classifier.load(store, loaded);
     }
 });
 
 test_btn.$click.subscribe(async() => {
     if(!toggle.$checked.get()){
         await test_batch.clear();
-        if(indic.loaded_run!=null){
-            classifier.load(store, loaded);
-        }
 		await test_batch.predict(classifier, testset);
     }
 });
