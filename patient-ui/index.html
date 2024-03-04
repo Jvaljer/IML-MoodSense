@@ -112,16 +112,16 @@
           <!-- App content-->
           <h1>MoodSense</h1>
           <!--Mood tracker button-->
-          <button class="btn" id="open-wizard">✍️ Track your mood</button>
+          <button class="btn" id="open-wizard">✍️ Track your today's mood</button>
           <!-- Tab with weekly overview-->
           <div class="tab">
-            <div class="tab-title">Your Week</div>
+            <div class="tab-title" id="open-week-tab">Your Week</div>
             😊 😊 😢 😡 😢 😡 😊
             <div class="weekdays">Mon  Tue  Wed  Thu  Fri  Sat  Sun</div>
           </div>
           <!-- Tab with monthly overview-->
           <div class="tab">
-            <div class="tab-title">Your Month</div>
+            <div class="tab-title" id="open-month-tab">Your Month</div>
             <!-- Due to time constraints, created a data vis graph with figma-->
             <img src="https://github.com/michelledtt/iml_user_ui/blob/main/iml_user_ui/src/components/Monthly%20Mood%20Chart.png?raw=true">
           </div>
@@ -136,6 +136,7 @@
         enable it to continue.
       </strong>
     </noscript>
+
     <div id="app"></div>
   </body>
 </html>

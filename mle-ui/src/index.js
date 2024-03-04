@@ -70,8 +70,11 @@ const dashboard = m.dashboard({
 //----------------------------//
 //       Cross-Validation     //
 //----------------------------//
-var classifier = m.mlpClassifier({ layers: [128, 64, 64, 32], epochs: 15, batchSize: 32});
-//.sync(store, "mlp-dash");
+var classifier = m.mlpClassifier({ 
+    layers: [128, 64, 64, 32], 
+    epochs: 15, 
+    batchSize: 32
+}).sync(store, "base-clf");
 
 const params = m.modelParameters(classifier);
 params.title = 'MLP Classifier parameters';
