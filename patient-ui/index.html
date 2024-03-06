@@ -48,7 +48,7 @@
         left: 61px;
         width: 56%;
         height: 83%;
-        background-image: linear-gradient(to bottom right, #9EBFEC, #CBE1FF); 
+        background-image: linear-gradient(to bottom right, #9EBFEC, #CBE1FF);
         border-radius: 35px;
       }
 
@@ -56,11 +56,12 @@
         padding: 20px 16px;
         font-size: 20px;
         font-family: 'Graphik', sans-serif;
-        background-color: #9ebeecb0; 
+        background-color: #9ebeecb0;
         border: none;
         color: #032350;
         border-radius: 15px;
         cursor: pointer;
+        width: 100%;
       }
 
       .btn:hover {
@@ -80,20 +81,25 @@
         flex-direction: column;
         justify-content: space-around;
         align-items: center;
-        background-color: #9ebeecb0; 
+        background-color: #9ebeecb0;
         color: #032350;
         border-radius: 15px;
         padding: 10px;
-        font-size: 16px; 
+        font-size: 16px;
         font-family: 'Graphik', sans-serif;
         margin-top: 10px;
         margin-bottom: 10px;
+      }
+
+      .tab:hover {
+        background-color: #CBE1FF;
       }
 
       .tab-title {
         font-size: 20px;
         margin-bottom: 5px;
       }
+
       .weekdays {
         margin-top: 5px;
         margin-bottom: 15px;
@@ -104,26 +110,27 @@
   </head>
 
   <body>
-    <!-- Creates illusion of a phone-->
+    <!-- Creates illusion of a phone -->
     <div class="container">
       <div class="phone">
         <img src="https://github.com/michelledtt/iml_user_ui/blob/2a5aff68c4d99f9ad2eb8cf6ced898d8f1f9d791/iml_user_ui/src/components/phone_screen.png?raw=true">
         <div class="screen">
-          <!-- App content-->
+          <!-- App content -->
           <h1>MoodSense</h1>
-          <!--Mood tracker button-->
-          <button class="btn" id="open-wizard">✍️ Track your today's mood</button>
-          <!-- Tab with weekly overview-->
-          <div class="tab">
-            <div class="tab-title" id="open-week-tab">Your Week</div>
+          <!-- Mood tracker button -->
+          <button class="btn" id="open-wizard"><b>Today ✍️</b><br>Track your mood</button>
+          <!-- Tab with weekly overview -->
+          <div class="tab" id="open-week-tab">
+            <div class="tab-title"><b>Your Week</b></div>
             😊 😊 😢 😡 😢 😡 😊
             <div class="weekdays">Mon  Tue  Wed  Thu  Fri  Sat  Sun</div>
           </div>
-          <!-- Tab with monthly overview-->
-          <div class="tab">
-            <div class="tab-title" id="open-month-tab">Your Month</div>
-            <!-- Due to time constraints, created a data vis graph with figma-->
-            <img src="https://github.com/michelledtt/iml_user_ui/blob/main/iml_user_ui/src/components/Monthly%20Mood%20Chart.png?raw=true">
+          <!-- Tab with monthly overview -->
+          <div class="tab" id="open-month-tab">
+            <div class="tab-title"><b>Your Month</b></div>
+            <!-- Due to time constraints, created a data vis graph with figma -->
+            <!--<img src="https://github.com/michelledtt/iml_user_ui/blob/main/iml_user_ui/src/components/Monthly%20Mood%20Chart.png?raw=true">-->
+            <div align="center"> <i>This <br>is <br>the <br>graph <br>for <br>the <br>month</i></div>
           </div>
         </div>
       </div>

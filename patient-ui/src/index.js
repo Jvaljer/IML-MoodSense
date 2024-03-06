@@ -5,18 +5,24 @@ import * as m from '@marcellejs/core';
 //          Marcelle Base Components         //
 //-------------------------------------------//
 const input = m.webcam();
-input.title = 'Preview the picture you are gonna take';
 
-const capture = m.button('Click to Record');
-const txt0 = m.text('\n\n <h2>If you are satisfied with the captured picture, go onto the next page !</h2>');
+const capture = m.button('Capture your mood');
+const txt0 = m.text('<br>If you are satisfied with the captured picture, go onto the next page !');
+const txt1 = m.text('<br>You captured the mood:');
 
 const shadow_src = m.imageUpload({ width:224, height:224 });
-const display = m.imageDisplay(shadow_src.$images);
+const display0 = m.imageDisplay(shadow_src.$images);
+
+const src = m.imageUpload({ width:224, height:224 });
+const display1 = m.imageDisplay(src.$images);
+
+const txt2 = m.text("Click to Load the Captured Mood<br>And Launch the model's prediction");
+const load = m.button('Load');
 
 //-----------------------------------//
 //          Intern Variables         //
 //-----------------------------------//
-const recorded = [];
+var mood;
 
 //------------------------------------------//
 //          Data Storage & Handling         //
@@ -58,9 +64,15 @@ capture.$click.subscribe(() => {
 	if(input.$images.get()!=undefined){
 		console.log("setting the recorded mood as: "+input.$images.get());
 		//now we wanna move on with that one (tolerating multiple selection but not working with it tho)
-		shadow_src.$images.set(input.$images.get());
+		mood = input.$images.get();
+		shadow_src.$images.set(mood);
 	}
 });
+
+load.$click.subscribe(() => {
+	src.$images.set(mood);
+});
+
 //-------------------------------------//
 //          Wizard Organisation        //
 //-------------------------------------//
@@ -69,12 +81,11 @@ wiz
 	.page()
 	.title('Recording')
 	.description('Take a picture of your mood:')
-	.use(input, capture, browser, display, txt0)
+	.use(input, capture, txt1, display0, txt0)
 	.page()
 	.title('Reviewing')
 	.description('Review and Correct your mood:')
-	.use();
-;
+	.use([txt2, load], display1);
 
 //------------------------------------//
 //         HTML Doc Handling          //
@@ -82,7 +93,7 @@ wiz
 document.querySelector('#open-wizard').addEventListener('click', () => {
 	//here we are gonna handle the setup of classifier and store fetching infos
 	wiz.show();
-	clf.load(store, 'base-clf');
+	//clf.load(store, 'base-clf');
 });
 
 document.querySelector('#open-week-tab').addEventListener('click', () => {
