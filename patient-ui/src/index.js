@@ -1,5 +1,6 @@
 import '@marcellejs/core/dist/marcelle.css';
 import * as m from '@marcellejs/core';
+import { moodReviewer } from './components';
 
 //-------------------------------------------//
 //          Marcelle Base Components         //
@@ -19,15 +20,25 @@ const display1 = m.imageDisplay(src.$images);
 const txt2 = m.text("Click to Load the Captured Mood<br>And Launch the model's prediction");
 const load = m.button('Load');
 
-//-----------------------------------//
-//          Intern Variables         //
-//-----------------------------------//
+const reviewer = moodReviewer();
+
+//--------------------------------------------//
+//          Intern Variables & Methods        //
+//--------------------------------------------//
 var mood;
+var mood_inst;
 
 //------------------------------------------//
 //          Data Storage & Handling         //
 //------------------------------------------//
-const store = m.dataStore('localStorage');
+const store = m.dataStore(
+	'https://marcelle.lisn.upsaclay.fr/iml2024/api'
+  );
+try {
+	await store.connect();
+} catch (error) {
+	await store.loginWithUI();
+}
 const extractor = m.mobileNet();
 
 const trainset = m.dataset('project-images', store);
@@ -60,17 +71,25 @@ const batch = m.batchPrediction("patient-batch", store);
 	.awaitPromises()
 	.subscribe(tmp_set.create); */
 
-capture.$click.subscribe(() => {
+capture.$click.subscribe(async() => {
 	if(input.$images.get()!=undefined){
 		console.log("setting the recorded mood as: "+input.$images.get());
 		//now we wanna move on with that one (tolerating multiple selection but not working with it tho)
 		mood = input.$images.get();
+		var thumb = input.$thumbnails.get();
 		shadow_src.$images.set(mood);
+
+		mood_inst = {
+			x: await extractor.process(mood),
+        	y: 'undefined',
+        	thumbnail: thumb,
+		}
 	}
 });
 
 load.$click.subscribe(() => {
 	src.$images.set(mood);
+	reviewer.SetInstance(mood_inst);
 });
 
 //-------------------------------------//
@@ -85,7 +104,7 @@ wiz
 	.page()
 	.title('Reviewing')
 	.description('Review and Correct your mood:')
-	.use([txt2, load], display1);
+	.use([txt2, load], display1, reviewer);
 
 //------------------------------------//
 //         HTML Doc Handling          //
