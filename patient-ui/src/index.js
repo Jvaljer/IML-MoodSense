@@ -6,10 +6,11 @@ import { moodReviewer } from './components';
 //          Marcelle Base Components         //
 //-------------------------------------------//
 const input = m.webcam();
+const pad = m.text('<div class="pad"></div>');
 
 const capture = m.button('Capture your mood');
-const txt0 = m.text('<br>If you are satisfied with the captured picture, go onto the next page !');
-const txt1 = m.text('<br>You captured the mood:');
+const txt0 = m.text('<div class="mtext">If you are satisfied with the captured picture, go onto the next page !</div>');
+
 
 const shadow_src = m.imageUpload({ width:224, height:224 });
 const display0 = m.imageDisplay(shadow_src.$images);
@@ -17,8 +18,7 @@ const display0 = m.imageDisplay(shadow_src.$images);
 const src = m.imageUpload({ width:224, height:224 });
 const display1 = m.imageDisplay(src.$images);
 
-const txt2 = m.text("Click to Load the Captured Mood<br>And Launch the model's prediction");
-const load = m.button('Load');
+const load = m.button("Load Captured Mood & Model's prediction");
 
 const reviewer = moodReviewer();
 
@@ -72,7 +72,6 @@ const plot = m.confidencePlot($prediction);
 //-----------------------------------//
 capture.$click.subscribe(async() => {
 	if(input.$images.get()!=undefined){
-		console.log("setting the recorded mood as: "+input.$images.get());
 		//now we wanna move on with that one (tolerating multiple selection but not working with it tho)
 		mood = input.$images.get();
 		var thumb = input.$thumbnails.get();
@@ -89,7 +88,7 @@ capture.$click.subscribe(async() => {
 load.$click.subscribe(async() => {
 	src.$images.set(mood);
 	reviewer.SetInstance(mood_inst);
-});
+}); //MOVE THAT TO A CUSTOM COMPONENT TO MAKE BUTTON BETTER ??
 
 //-------------------------------------//
 //          Wizard Organisation        //
@@ -99,11 +98,11 @@ wiz
 	.page()
 	.title('Recording')
 	.description('Take a picture of your mood:')
-	.use(input, capture, txt1, display0, txt0)
+	.use(input, capture, pad, display0, txt0)
 	.page()
 	.title('Reviewing')
 	.description('Review and Correct your mood:')
-	.use([txt2, load], display1, reviewer, plot);
+	.use(load, display1, plot, reviewer);
 
 //------------------------------------//
 //         HTML Doc Handling          //
