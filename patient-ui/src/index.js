@@ -58,19 +58,18 @@ const clf = m.mlpClassifier({
 
 const batch = m.batchPrediction("patient-batch", store);
 
+const $feature = src.$images
+	.map((img) => extractor.process(img))
+	.awaitPromises();
+const $prediction = $feature
+	.map((feat) => clf.predict(feat))
+	.awaitPromises();
+
+const plot = m.confidencePlot($prediction);
+
 //-----------------------------------//
 //          Streams Handling         //
 //-----------------------------------//
-/*const $instance = capture.$click
-	.sample(input.$images)
-	.map(async(img) => ({
-		x: await extractor.process(img),
-        y: 'tmp',
-        thumbnail: input.$thumbnails.get(),
-	}))
-	.awaitPromises()
-	.subscribe(tmp_set.create); */
-
 capture.$click.subscribe(async() => {
 	if(input.$images.get()!=undefined){
 		console.log("setting the recorded mood as: "+input.$images.get());
@@ -87,7 +86,7 @@ capture.$click.subscribe(async() => {
 	}
 });
 
-load.$click.subscribe(() => {
+load.$click.subscribe(async() => {
 	src.$images.set(mood);
 	reviewer.SetInstance(mood_inst);
 });
@@ -104,7 +103,7 @@ wiz
 	.page()
 	.title('Reviewing')
 	.description('Review and Correct your mood:')
-	.use([txt2, load], display1, reviewer);
+	.use([txt2, load], display1, reviewer, plot);
 
 //------------------------------------//
 //         HTML Doc Handling          //
@@ -112,7 +111,7 @@ wiz
 document.querySelector('#open-wizard').addEventListener('click', () => {
 	//here we are gonna handle the setup of classifier and store fetching infos
 	wiz.show();
-	//clf.load(store, 'base-clf');
+	clf.load(store, 'base-clf');
 });
 
 document.querySelector('#open-week-tab').addEventListener('click', () => {
