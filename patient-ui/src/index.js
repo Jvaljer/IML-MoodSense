@@ -9,16 +9,11 @@ const input = m.webcam();
 const pad = m.text('<div class="pad"></div>');
 
 const capture = m.button('Capture your mood');
-const txt0 = m.text('<div class="mtext">If you are satisfied with the captured picture, go onto the next page !</div>');
+const txt = m.text('<div class="mtext">Below you can observe and Correct the predicted mood !</div>');
 
 
 const shadow_src = m.imageUpload({ width:224, height:224 });
 const display0 = m.imageDisplay(shadow_src.$images);
-
-const src = m.imageUpload({ width:224, height:224 });
-const display1 = m.imageDisplay(src.$images);
-
-const load = m.button('Load Captured Mood & Model prediction');
 
 const reviewer = moodReviewer();
 
@@ -56,9 +51,7 @@ const clf = m.mlpClassifier({
     batchSize: 32
 });
 
-const batch = m.batchPrediction("patient-batch", store);
-
-const $feature = src.$images
+const $feature = shadow_src.$images
 	.map((img) => extractor.process(img))
 	.awaitPromises();
 const $prediction = $feature
@@ -82,34 +75,23 @@ capture.$click.subscribe(async() => {
         	y: 'undefined',
         	thumbnail: thumb,
 		}
+
+		//now I wanna add the captured picture to the HTML UI
+		document.querySelector(".no").style.display = "none";
+		document.querySelector(".yes").style.display = "block";
 	}
 });
 
-load.$click.subscribe(async() => {
-	src.$images.set(mood);
-	reviewer.SetInstance(mood_inst);
-}); //MOVE THAT TO A CUSTOM COMPONENT TO MAKE BUTTON BETTER ??
 //-------------------------------------//
 //          Wizard Organisation        //
 //-------------------------------------//
 const wiz = m.wizard();
 wiz
 	.page()
-	.title('Recording')
+	.title('Record & Review your Mood')
 	.description('Take a picture of your mood:')
-	.use(input, capture, pad, display0, txt0)
-	.page()
-	.title('Reviewing')
-	.description('Review and Correct your mood:')
-	.use(load, display1, plot, reviewer);
+	.use(input, capture, pad, display0, txt, plot, reviewer);
 
-wiz.$current.subscribe(async(cur) => {
-	if(cur == 1){
-		/*src.$images.set(mood);
-		reviewer.SetInstance(mood_inst);*/
-		//must find a way to load automatically here (without having to load manually)
-	}
-});
 //------------------------------------//
 //         HTML Doc Handling          //
 //------------------------------------//

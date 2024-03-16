@@ -119,6 +119,10 @@
       .pad {
         padding-bottom: 8px;
       }
+
+      .yes {
+        display: none;
+      }
     </style>
   </head>
 
@@ -131,7 +135,17 @@
           <!-- App content -->
           <h1>MoodSense</h1>
           <!-- Mood tracker button -->
-          <button class="btn" id="open-wizard"><b>Today ✍️</b><br>Track your mood</button>
+          <button class="btn" id="open-wizard">
+            <div class="content">
+              <b>Today ✍️</b>
+              <div class="no">
+                Track your mood
+              </div>
+              <div class="yes">
+                Mood Recorded
+              </div>
+            </div>
+          </button>
           <!-- Tab with weekly overview -->
           <div class="tab" id="open-week-tab">
             <div class="tab-title"><b>Your Week</b></div>
@@ -142,8 +156,8 @@
           <div class="tab" id="open-month-tab">
             <div class="tab-title"><b>Your Month</b></div>
             <!-- Due to time constraints, created a data vis graph with figma -->
-            <!--<img src="https://github.com/michelledtt/iml_user_ui/blob/main/iml_user_ui/src/components/Monthly%20Mood%20Chart.png?raw=true">-->
-            <div align="center"> <i>This <br>is <br>the <br>graph <br>for <br>the <br>month</i></div>
+            <img src="https://github.com/michelledtt/iml_user_ui/blob/main/iml_user_ui/src/components/Monthly%20Mood%20Chart.png?raw=true">
+            <!--<div align="center"> <i>This <br>is <br>the <br>graph <br>for <br>the <br>month</i></div>-->
           </div>
         </div>
       </div>
