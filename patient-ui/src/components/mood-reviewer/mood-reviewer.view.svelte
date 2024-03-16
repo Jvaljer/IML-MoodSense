@@ -8,29 +8,59 @@
   /* TO DO */
   #txt{
     font-size: 32px;
-    padding-bottom: 2%;
+    padding-bottom: 4%;
   }
   #buttons{
     display: flex;
     justify-content: space-around;
-  }
-  .custom-btn {
-    font-size: 24px;
-    padding: 2% 8% 2% 8%;
-    border-radius: 24px;
-    cursor:pointer ;
+    padding-bottom: 4%;
   }
 
-  .custom-btn:active {
-    background-color: rgb(143, 143, 143);
+  input[type="radio"]{
+    display:none;
+  }
+  input[type="radio"]:checked + label{
+    background-color: black;
+    color: white;
+
+  }
+  input[type="radio"]:checked + label:before{
+    height: 16px;
+    width: 16px;
+    border: 6px solid white;
+    background-color: black;
+  }
+
+  label{
+    position: relative;
+    color: rgba(0,0,0,1);
+    font-size: 24px;
+    font-weight: bold;
+    border: 3px solid black;
+    border-radius: 4px;
+    padding: 4px 8px 4px 8px;
+    display:flex;
+    align-items: center;
+    cursor: pointer;
+  }
+  label:before{
+    content: "";
+    height: 30px;
+    width: 30px;
+    border: 3px solid black;
+    border-radius: 50%;
+    margin-right: 8px;
   }
 </style>
 
 <ViewContainer>
   <div id="txt"><br>Correct the prediction if needed: <br></div>
   <div id="buttons">
-    <button class="custom-btn" id="happy-btn" on:click={() => ChangeMood('happy')}>Happy</button>
-    <button class="custom-btn" id="sad-btn" on:click={() => ChangeMood('sad')}>Sad</button>
-    <button class="custom-btn" id="angry-btn" on:click={() => ChangeMood('angry')}>Angry</button>
+    <input type="radio" name="mood" id="happy">
+    <label for="happy">Happy</label>
+    <input type="radio" name="mood" id="sad">
+    <label for="sad">Sad</label>
+    <input type="radio" name="mood" id="angry">
+    <label for="angry">Angry</label>
   </div>
 </ViewContainer>

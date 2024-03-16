@@ -18,7 +18,7 @@ const display0 = m.imageDisplay(shadow_src.$images);
 const src = m.imageUpload({ width:224, height:224 });
 const display1 = m.imageDisplay(src.$images);
 
-const load = m.button("Load Captured Mood & Model's prediction");
+const load = m.button('Load Captured Mood & Model prediction');
 
 const reviewer = moodReviewer();
 
@@ -89,7 +89,6 @@ load.$click.subscribe(async() => {
 	src.$images.set(mood);
 	reviewer.SetInstance(mood_inst);
 }); //MOVE THAT TO A CUSTOM COMPONENT TO MAKE BUTTON BETTER ??
-
 //-------------------------------------//
 //          Wizard Organisation        //
 //-------------------------------------//
@@ -104,6 +103,13 @@ wiz
 	.description('Review and Correct your mood:')
 	.use(load, display1, plot, reviewer);
 
+wiz.$current.subscribe(async(cur) => {
+	if(cur == 1){
+		/*src.$images.set(mood);
+		reviewer.SetInstance(mood_inst);*/
+		//must find a way to load automatically here (without having to load manually)
+	}
+});
 //------------------------------------//
 //         HTML Doc Handling          //
 //------------------------------------//
