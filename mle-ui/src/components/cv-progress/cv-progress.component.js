@@ -34,7 +34,10 @@ export class CvProgress extends Component {
 		const a2 = this.accs[1];
 		const a3 = this.accs[2];
 
-		return (a1+a2+a3)/3;
+		const mean = (a1+a2+a3)/3;
+		console.log("mean rounded: "+mean.toFixed(2));
+		//return mean.toFixed(2);
+		return parseFloat(mean.toFixed(2));
 	}
 
 	mount(target) {

@@ -5,14 +5,14 @@ import { history, indicator, cvProgress } from './components';
 //----------------------------//
 //          Components        //
 //----------------------------//
-//const input = m.imageUpload({ width: 224, height: 224 });
-const input = m.sketchPad(); //only for quick local testing
+const input = m.imageUpload({ width: 224, height: 224 });
+//const input = m.sketchPad(); //only for quick local testing
 const instanceViewer = m.imageDisplay(input.$images);
 input.title = 'Upload Your Image';
 instanceViewer.title = 'Here yo ucan visualise it better';
 
-//const label = m.select(['angry','sad','happy'], 'happy');
-const label = m.select(['square','triangle','circle'], 'square'); //for testing purposes only
+const label = m.select(['angry','sad','happy'], 'happy');
+//const label = m.select(['square','triangle','circle'], 'square'); //for testing purposes only
 label.title = 'Define its Label';
 
 const launch = m.button('Launch');
@@ -23,8 +23,8 @@ test_btn.title = 'Test Loaded Model';
 const toggle = m.toggle('Toggle Testing from Upload Image');
 toggle.title = 'Testing on Dataset';
 
-//const test_input = m.imageUpload({ width: 224, height: 224 });
-const test_input = m.sketchPad(); //only for local testing purposes
+const test_input = m.imageUpload({ width: 224, height: 224 });
+//const test_input = m.sketchPad(); //only for local testing purposes
 test_input.title = 'Upload an image you wanna test';
 const test_viewer = m.imageDisplay(test_input.$images);
 test_viewer.title = 'Preview of your Image';
@@ -38,15 +38,15 @@ capture_test.title = 'Save it to TEST';
 //----------------------------//
 //       Dataset Handling     //
 //----------------------------//
-/*const store = m.dataStore(
+const store = m.dataStore(
     'https://marcelle.lisn.upsaclay.fr/iml2024/api'
   );
 try {
     await store.connect();
 } catch (error) {
     await store.loginWithUI();
-}*/
-const store = m.dataStore('localStorage'); //only for local testing purposes
+}
+//const store = m.dataStore('localStorage'); //only for local testing purposes
 const extractor = m.mobileNet();
 
 const trainset = m.dataset('project-images', store);

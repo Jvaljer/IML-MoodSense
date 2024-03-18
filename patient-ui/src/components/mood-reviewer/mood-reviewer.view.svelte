@@ -37,7 +37,7 @@
     font-size: 24px;
     font-weight: bold;
     border: 3px solid black;
-    border-radius: 4px;
+    border-radius: 16px;
     padding: 4px 8px 4px 8px;
     display:flex;
     align-items: center;
